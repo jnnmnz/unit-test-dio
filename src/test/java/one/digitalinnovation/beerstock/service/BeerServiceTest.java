@@ -99,7 +99,39 @@ public class BeerServiceTest {
     }
 
     @Test
-    void name() {
+    void whenListBeerIsCalledThenReturnAListOfBeers() {
+        BeerDTO expectedFoundBeerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+        Beer expectedFoundBeer = beerMapper.toModel(expectedFoundBeerDTO);
+
+        when(beerRepository.findAll()).thenReturn(Collections.singletonList(expectedFoundBeer));
+
+        List<BeerDTO> foundListBeerDTO = beerService.listAll();
+
+        assertThat(foundListBeerDTO, is(not(empty())));
+        assertThat(foundListBeerDTO.get(0), is(equalTo(expectedFoundBeerDTO)));
+    }
+
+    @Test
+    void whenListBeerIsCalledThenReturnAnEmptyListOfBeers() {
+        when(beerRepository.findAll()).thenReturn(Collections.EMPTY_LIST);
+
+        List<BeerDTO> foundListBeerDTO = beerService.listAll();
+
+        assertThat(foundListBeerDTO, is(empty()));
+    }
+
+    @Test
+    void whenExclusionIsCalledWithValidIdThenABeerShouldBeDeleted() throws BeerNotFoundException {
+        BeerDTO expectedDeletedBeerDTO = BeerDTOBuilder.builder().build().toBeerDTO();
+        Beer expectedDeletedBeer = beerMapper.toModel(expectedDeletedBeerDTO);
+
+        when(beerRepository.findById(expectedDeletedBeerDTO.getId())).thenReturn(Optional.of(expectedDeletedBeer));
+        doNothing().when(beerRepository).deleteById(expectedDeletedBeerDTO.getId());
+
+        beerService.deleteById(expectedDeletedBeer.getId());
+
+        verify(beerRepository, times(1)).findById(expectedDeletedBeerDTO.getId());
+        verify(beerRepository, times(1)).deleteById(expectedDeletedBeerDTO.getId());
     }
 
     //
